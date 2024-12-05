@@ -68,7 +68,7 @@ fun part1(input: string)
                     val start = Point(px, py)
                     val end = Point(px + 3 * dx * sign, py + 3 * dy * sign)
                     if contains(word-bounds, start) && contains(word-bounds, end) then
-                        log("Found at " ++ i.show ++ " " ++ divmod(i, width).show)
+                        log("Found at " ++ i.show ++ " " ++ start.show)
                         dir-total := dir-total + 1
                     else
                         log("Bounds failure at " ++ i.show ++ " " ++ start.show ++ " " ++ end.show)
@@ -82,6 +82,45 @@ fun part1(input: string)
 
     println("Part 1: " ++ total.show)
 
+fun part2(input: string)
+    val (text, word-bounds) = parse-wordsearch(input)
+    val Bounds(width, height) = word-bounds
+
+    val (_x, m, a, s) = build-masks-acc(text.slice, (Nil, Nil, Nil, Nil))
+
+    val dirs = [(False, False), (False, True), (True, False), (True, True)]
+
+    val total = dirs
+        .map fn((left-reversed, right-reversed))
+
+            var tl := (if left-reversed then s else m)
+            var tr := (if right-reversed then s else m).drop(2)
+            var mid := a.drop(width + 1)
+            var bl := (if right-reversed then m else s).drop(width * 2)
+            var br := (if left-reversed then m else s).drop(width * 2 + 2)
+
+            var dir-total := 0
+            for(0, width * height - (width * 2 + 2) - 1) fn(i)
+                if (tl.head.unjust && tr.head.unjust && mid.head.unjust && bl.head.unjust && br.head.unjust) then
+                    val (py, px) = divmod(i, width)
+                    val start = Point(px, py)
+                    val end = Point(px + 2, py + 2)
+                    if contains(word-bounds, end) then
+                        log("Found at " ++ i.show ++ " " ++ start.show)
+                        dir-total := dir-total + 1
+                    else
+                        log("Bounds failure at " ++ i.show ++ " " ++ start.show ++ " " ++ end.show)
+                tl := tl.tail
+                tr := tr.tail
+                mid := mid.tail
+                bl := bl.tail
+                br := br.tail
+            log("Dir total " ++ (left-reversed, right-reversed).show ++ " = " ++ dir-total.show)
+            dir-total
+        .sum
+
+    println("Part 2: " ++ total.show)
+
 
 fun main()
     val log-enabled = False
@@ -91,3 +130,4 @@ fun main()
     val input = read-text-file(path("input/d04.txt"))
 
     part1(input)
+    part2(input)

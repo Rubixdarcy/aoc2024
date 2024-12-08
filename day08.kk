@@ -13,6 +13,7 @@ fun main()
     val input = parse-input(read-text-file(path(input-filename)))
 
     part1(input)
+    part2(input)
 
 fun parse-input(input: string) : <exn,log> (vector<list<(int, int)>>, (int, int))
     val result-mut = vector-init(256, fn(_i) ref(Nil))
@@ -39,7 +40,6 @@ fun choose2(l: list<a>) : list<(a, a)>
     val (x, xs) = l'
     xs.map(fn(x') (x, x'))
 
-
 fun splits(l: list<a>) : list<(a, list<a>)>
     splits-acc(l, Nil)
 
@@ -64,7 +64,7 @@ fun sorted-key(xs: list<a>, key: (a) -> pure int) : pure list<a>
             le.sorted-key(key) ++ [x0] ++ gt.sorted-key(key)
 
  // Requires input list is sorted
-fun unique(l: list<a>, ?(==) : (a, a) -> bool) : <div> list<a>
+fun unique(l: list<a>, ?(==) : (a, a) -> bool) : div list<a>
     match l
         Nil -> Nil
         Cons(x0, l') ->
@@ -89,6 +89,26 @@ fun part1((antennae, bounds): (vector<list<(int, int)>>, (int, int)))
     log("Result: " ++ result.show)
     val total = result.length
     println("Part 1: " ++ total.show)
+
+fun part2((antennae, bounds): (vector<list<(int, int)>>, (int, int)))
+    val result = antennae.list
+        .flatmap fn(locs)
+            with pair <- locs.choose2.flatmap
+            val (a, b) = pair
+            [(a, (a - b)), (b, (b - a))]
+                .flatmap fn((base, delta))
+                    var pos := base
+                    var antinodes := Nil
+                    while { pos.in-bounds(bounds) }
+                        antinodes := Cons(pos, antinodes)
+                        pos := pos + delta
+                    antinodes
+        .sorted-key(fn((x, y)) x * 1000 + y)
+        .unique
+
+    log("Result: " ++ result.show)
+    val total = result.length
+    println("Part 2: " ++ total.show)
 
 
 

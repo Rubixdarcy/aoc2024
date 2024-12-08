@@ -14,13 +14,17 @@ fun parse-input(input: string) : exn list<(int, list<int>)>
 
 effect ctl pick(xs: list<a>) : a
 
-val ops: list<(int, int) -> int> = [(+), (*)]
+val ops1: list<(int, int) -> <exn,log,pick> int> = [(+), (*)]
+val ops2: list<(int, int) -> <exn,log,pick> int> = [
+    (+), (*), fn(x, y) (x.show ++ y.show).parse-int.unjust]
 
-fun compute(x: int, y: int) : pick int
-    pick(ops)(x, y)
+fun compute(x: int, y: int, ops: list<(int, int) -> <pick|e> int>) : <pick|e> int
+    val op = pick(ops)
+    op(x, y)
 
-fun compute-list(xs: list<int>, l: int) : <exn,pick> int
-    xs.foldl1(fn(x, y) compute(x, y).limit(l))
+fun compute-list(xs: list<int>, l: int,
+                 ops: list<(int, int) -> <pick,exn|e> int>) : <pick,exn|e> int
+    xs.foldl1(fn(x, y) compute(x, y, ops).limit(l))
 
 fun limit(x: int, limit: int) : pick int
     if x > limit then
@@ -33,24 +37,29 @@ fun all-options(action: () -> <pick|e> a) : e list<a>
             xs.flatmap(fn(x) resume(x))
     h({ [action()] })
 
-fun part1(input: list<(int, list<int>)>)
-    println("Input: " ++ input.show)
-    val total = input
-        .filter fn((total, ops))
-            println("Total " ++ total.show)
-            all-options({ ops.compute-list(total) }).any(fn(t) t == total)
+fun part(input: list<(int, list<int>)>,
+         ops: list<(int, int) -> <exn,log,pick> int>) : <exn,log> int
+    input
+        .filter fn((total, operands))
+            log("Total " ++ total.show)
+            all-options({ operands.compute-list(total, ops) }).any(fn(t) t == total)
         .map(fn((t, _l)) t)
         .sum()
 
-    println("Part 1: " ++ total.show)
+fun part1(input: list<(int, list<int>)>)
+    println("Part 1: " ++ part(input, ops1).show)
+
+fun part2(input: list<(int, list<int>)>)
+    println("Part 2: " ++ part(input, ops2).show)
 
 effect fun log(msg: string) : ()
 
 fun main()
-    val log-enabled = True
+    val log-enabled = False
     with fun log(msg)
         if log-enabled then println(msg)
 
     val input = parse-input(read-text-file(path("input/d07.txt")))
 
     part1(input)
+    part2(input)

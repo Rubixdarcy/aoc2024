@@ -1,11 +1,15 @@
+// REQUIRES at least -O1 compilation to work
+
 import std/os/file
 import std/os/path
 import std/fixpoint/memo
 import std/data/rb-map
+import std/data/rbtree
 
 val log-enabled = False
 val input-filename = "input/d11.txt"
-val input-gen = 25
+val part1-gen = 25
+val part2-gen = 75
 
 effect fun log(msg: string) : ()
 
@@ -16,10 +20,11 @@ fun main()
     val input = parse-input(read-text-file(path(input-filename)))
 
     log("Input " ++ input.show)
-    part1(input)
+    part-n(1, input, part1-gen)
+    part-n(2, input, part2-gen)
 
-fun part1(input: list<int>)
-    val inputs = input.map fn(n) (n, input-gen)
+fun part-n(part: int, input: list<int>, gen: int)
+    val inputs = input.map fn(n) (n, gen)
     val result: rbmap<(int, int), int> =
         with cache
         val pair = inputs.each
@@ -27,7 +32,7 @@ fun part1(input: list<int>)
 
     val total = inputs.map(fn(i) result.lookup(i).unjust).sum
 
-    println("Part 1: " ++ total.show)
+    println("Part " ++ part.show ++ ": " ++ total.show)
 
 fun parse-input(input: string) : exn list<int>
     input.trim().split(" ").filter(is-notempty).map(fn(s) s.parse-int().unjust)

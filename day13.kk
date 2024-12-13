@@ -2,7 +2,7 @@ import std/os/file
 import std/os/path
 import std/text/regex
 
-val log-enabled = True
+val log-enabled = False
 val input-filename = "input/d13.txt"
 
 effect fun log(msg: string) : ()
@@ -15,6 +15,7 @@ fun main()
 
     log("Input " ++ input.show)
     part1(input)
+    part2(input)
 
 fun part1(input: list<problem>)
     val total = input
@@ -23,6 +24,18 @@ fun part1(input: list<problem>)
         .sum
 
     println("Part 1: " ++ total.show)
+
+fun part2(input: list<problem>)
+
+    val input' = input.map fn(p)
+        p(xp = p.xp + 10000000000000, yp = p.yp + 10000000000000)
+
+    val total = input'
+        .filter-map(solve)
+        .map(fn((a, b)) a * 3 + b)
+        .sum
+
+    println("Part 2: " ++ total.show)
 
 
 

@@ -1,0 +1,3 @@
+[submodule "deps/std"]
+	path = deps/std
+	url = https://github.com/koka-community/std.git

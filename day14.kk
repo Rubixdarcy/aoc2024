@@ -1,6 +1,7 @@
 import std/os/file
 import std/os/path
 import std/text/regex
+import std/os/readline
 
 val log-enabled = False
 
@@ -25,6 +26,7 @@ fun main()
 
     log("Input " ++ input.show)
     part1(input)
+    part2(input)
 
 fun part1(input: list<(position, velocity)>)
     var quads := vector(4, 0)
@@ -35,6 +37,30 @@ fun part1(input: list<(position, velocity)>)
             quads[q] := quads[q] + 1
     val total = quads.list.foldl1((*))
     println("Part 1: " ++ total.show)
+
+fun part2(input: list<(position, velocity)>)
+    var t := 2
+    while { readline().is-empty }
+        val map = vector-init(input-width * input-height, fn(_i) ref(' '))
+        println(t.show)
+        println("")
+        input.foreach fn((p, v))
+            val Position(x, y) = sim(p, v, t).bound(input-width, input-height)
+            val i = y * input-width + x
+            val r = map.at(i).unjust
+            r := '#'
+        val map-s = map.list
+            .map-indexed fn(i, c)
+                if i % input-width == 0 then
+                    "\n" ++ (!c).string
+                else
+                    (!c).string
+            .join
+        println(map-s)
+        t := t + 101
+
+
+
 
 
 
@@ -54,6 +80,10 @@ fun position/quadrant(Position(x, y), width: int, height: int) : maybe<int>
     val qv = if y' < h2 then 0 else 1
 
     Just(qv * 2 + qh)
+
+fun position/bound(Position(x, y), width: int, height: int) : position
+    Position(x % width, y % height)
+
 
 value struct velocity { x: int; y: int}
 fun velocity/show(Velocity(x, y) : velocity) "Velocity" ++ (x, y).show
